@@ -1,5 +1,23 @@
+# Node and frontend
+node_modules/
+frontend/dist/
+frontend/.env
+
+# Python and backend
 __pycache__/
 *.pyc
-.env
-node_modules/
-dist/
+*.pyo
+*.pyd
+backend/.env
+
+# Venvs (optional but good)
+venv/
+env/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs and cache
+*.log
+*.sqlite3
