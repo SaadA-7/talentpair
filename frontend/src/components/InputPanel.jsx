@@ -1,5 +1,5 @@
 import React from 'react';
-import ResumeUpload from './ResumeUpload';
+import ResumeUpload from './ResumeUpload.jsx';
 import JobDescriptionInput from './JobDescriptionInput';
 import ScreenButton from './ScreenButton';
 
