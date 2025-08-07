@@ -1,32 +1,28 @@
-import { useState } from 'react'
+import React from 'react';
+import Header from './components/Header';
+import MainLayout from './components/MainLayout';
+import InputPanel from './components/InputPanel';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="bg-gray-100 min-h-screen font-sans">
+      <Header />
+      <MainLayout>
+        {/* Left column for inputs */}
+        <InputPanel />
+        
+        {/* Right column for results */}
+        <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center justify-center text-center">
+          <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19V6l-2 2-2-2-2 2L2 6v13a2 2 0 002 2h14a2 2 0 002-2v-3m-6 3V9m-2 4h4" />
+          </svg>
+          <p className="mt-4 text-sm text-gray-500">
+            Ready to analyze. Upload a resume and provide a job description to see detailed matching results and recommendations.
+          </p>
+        </div>
+      </MainLayout>
+    </div>
+  );
 }
 
-export default App
+export default App;
