@@ -4,13 +4,20 @@ import re
 from nltk.corpus import stopwords
 import nltk
 from sentence_transformers import SentenceTransformer, util
+from fastapi import FastAPI, UploadFile, File
+import uvicorn
+from io import StringIO
+import json
+import torch
 
-# Ensure NLTK stopwords are downloaded (run once in Python terminal)
+# Initialize FastAPI app
+app = FastAPI()
+
+# Note on NLTK stopwords: This is a one-time download.
+# If you run the code and it throws a LookupError, open a Python
+# terminal and run:
 # >>> import nltk
 # >>> nltk.download('stopwords')
-
-# Load a pre-trained Sentence Transformer model
-model = SentenceTransformer('all-MiniLM-L6-v2')
 
 # Get the list of English stopwords
 stop_words = set(stopwords.words('english'))
@@ -47,99 +54,98 @@ data_path = os.path.join(os.path.dirname(__file__), 'data')
 jobs_file = os.path.join(data_path, 'job_description.csv')
 resumes_file = os.path.join(data_path, 'resume_data.csv')
 
-def load_datasets():
-    """Loads and preprocesses the resume and job descriptions datasets."""
-    
-    resume_df = None
-    job_df = None
-    
+def load_resumes_for_match():
+    """Loads and preprocesses the entire resume dataset for matching."""
     try:
-        job_df = pd.read_csv(jobs_file)
         resume_df = pd.read_csv(resumes_file)
     except FileNotFoundError as e:
-        print(f"Error: A data file was not found. Please check your filenames and paths. Details: {e}")
-        return None, None
+        print(f"Error: Resume data file not found. Details: {e}")
+        return None
     
-    # Use the correct column names found through debugging
+    # Use the correct column name
     resume_text_column = 'skills' 
-    job_desc_column = 'job_title'
     
-    # Check if the required columns exist before processing
     if resume_text_column not in resume_df.columns:
         print(f"KeyError: '{resume_text_column}' column not found in resume_data.csv. Please check the CSV file.")
-        return None, None
-    if job_desc_column not in job_df.columns:
-        print(f"KeyError: '{job_desc_column}' column not found in job_description.csv. Please check the CSV file.")
-        return None, None
+        return None
 
-    # Preprocess the text data
     resume_df['processed_resume'] = resume_df[resume_text_column].apply(preprocess_text)
-    job_df['processed_job'] = job_df[job_desc_column].apply(preprocess_text)
-
-    # Drop rows where the text might have become empty after preprocessing
     resume_df.dropna(subset=['processed_resume'], inplace=True)
-    job_df.dropna(subset=['processed_job'], inplace=True)
+    return resume_df
 
-    return resume_df, job_df
+# Load the Sentence Transformer model globally at startup
+model = SentenceTransformer('all-MiniLM-L6-v2')
 
 def get_embeddings(texts):
     """
     Generates sentence embeddings for a list of texts.
     """
+    # Check for empty list and handle it gracefully
+    if not texts:
+        return torch.tensor([])
     return model.encode(texts, convert_to_tensor=True)
 
-def match_resumes_to_job(job_description, resumes_df, num_matches=5):
+# --- API Endpoints ---
+@app.get("/")
+def read_root():
     """
-    Matches and ranks resumes against a single job description.
+    Health check endpoint to ensure the API is running.
     """
-    print(f"\nMatching resumes for job: {job_description}\n")
+    return {"message": "Welcome to the TalentPair API! The server is running."}
 
-    # Generate embeddings for the job description and all resumes
-    job_embedding = get_embeddings([job_description])
-    resume_embeddings = get_embeddings(resumes_df['processed_resume'].tolist())
+@app.post("/match")
+async def match_resumes(job_description: str, resume: UploadFile = File(...)):
+    """
+    Screens and ranks resumes against a provided job description.
+    """
+    # Load the full resume dataset when the endpoint is called
+    resume_df = load_resumes_for_match()
+    if resume_df is None:
+        return {"error": "Resume dataset failed to load."}
+
+    # Read the content of the uploaded resume file
+    resume_content = (await resume.read()).decode("utf-8")
+
+    # Preprocess the job description and the uploaded resume
+    processed_job_desc = preprocess_text(job_description)
+    processed_resume_content = preprocess_text(resume_content)
+
+    # Generate embeddings for all resumes and the job description
+    all_texts = resume_df['processed_resume'].tolist()
+    all_texts.append(processed_resume_content)
+    all_texts.append(processed_job_desc)
+
+    all_embeddings = get_embeddings(all_texts)
+    
+    # The last embedding is for the job description
+    job_embedding = all_embeddings[-1:]
+    
+    # The first embeddings are for the resumes (including the uploaded one)
+    resumes_embeddings = all_embeddings[:-1]
 
     # Calculate cosine similarity between the job and all resumes
-    cosine_scores = util.cos_sim(job_embedding, resume_embeddings)[0]
-
-    # Get the top N resume indices based on the scores
-    top_matches_indices = cosine_scores.topk(num_matches).indices.tolist()
+    cosine_scores = util.cos_sim(job_embedding, resumes_embeddings)[0]
     
-    ranked_resumes = []
-    for rank, idx in enumerate(top_matches_indices):
+    top_matches_indices = sorted(range(len(cosine_scores)), key=lambda i: cosine_scores[i], reverse=True)
+    
+    ranked_results = []
+    
+    for rank, idx in enumerate(top_matches_indices[:5]): # Top 5 results
         score = cosine_scores[idx].item()
-        resume_text = resumes_df.iloc[idx]['processed_resume']
-        original_resume_data = resumes_df.iloc[idx]
         
-        ranked_resumes.append({
-            'rank': rank + 1,
-            'match_score': score,
-            'resume_text': resume_text,
-            'original_data': original_resume_data
+        # Check if the index corresponds to the uploaded resume
+        if idx == len(resume_df):
+            resume_data = {"id": "uploaded_resume", "content": resume_content, "match_score": score}
+        else:
+            resume_data = {
+                "id": resume_df.iloc[idx]['ID'] if 'ID' in resume_df.columns else idx,
+                "content": resume_df.iloc[idx]['skills'],
+                "match_score": score
+            }
+        
+        ranked_results.append({
+            "rank": rank + 1,
+            "resume": resume_data
         })
-    
-    return ranked_resumes
 
-if __name__ == "__main__":
-    resume_df, job_df = load_datasets()
-
-    if resume_df is not None and job_df is not None:
-        # Example 1: Match all resumes to the first job description in the dataset
-        job_description_text = job_df.iloc[0]['processed_job']
-        ranked_resumes = match_resumes_to_job(job_description_text, resume_df)
-
-        print("--- Top Ranked Resumes ---")
-        for match in ranked_resumes:
-            print(f"Rank {match['rank']}: Score = {match['match_score']:.4f}")
-            print(f"Resume Content: {match['resume_text'][:100]}...\n") # Print first 100 characters
-
-        # Example 2: Match resumes to a custom job title
-        custom_job = "Data Analyst with Python and SQL skills."
-        ranked_custom_resumes = match_resumes_to_job(preprocess_text(custom_job), resume_df)
-        
-        print("\n--- Top Ranked Resumes for Custom Job ---")
-        for match in ranked_custom_resumes:
-            print(f"Rank {match['rank']}: Score = {match['match_score']:.4f}")
-            print(f"Resume Content: {match['resume_text'][:100]}...\n")
-
-    else:
-        print("Dataset loading failed. Please resolve the file or column name errors.")
+    return {"job_description": job_description, "ranked_resumes": ranked_results}

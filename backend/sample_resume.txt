@@ -1,0 +1,1 @@
+Software Engineer with 5+ years of experience in developing and maintaining web applications. Proficient in Python, Java, and JavaScript. Experienced in building RESTful APIs using Flask and Django. Skilled in database management with SQL and NoSQL. Familiar with cloud platforms like AWS and Docker for containerization. Strong problem-solving and communication skills.
