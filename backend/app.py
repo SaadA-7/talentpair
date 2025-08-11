@@ -4,18 +4,18 @@ import re
 from nltk.corpus import stopwords
 import nltk
 from sentence_transformers import SentenceTransformer, util
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
 import uvicorn
 from io import StringIO
 import json
 import torch
+import pypandoc
+from tempfile import NamedTemporaryFile
 
 # Initialize FastAPI app
 app = FastAPI()
 
 from fastapi.middleware.cors import CORSMiddleware
-# Initialize FastAPI app
-app = FastAPI()
 
 origins = [
     "http://localhost:5173",  # frontend's address
@@ -111,8 +111,9 @@ def read_root():
     """
     return {"message": "Welcome to the TalentPair API! The server is running."}
 
+# Corrected endpoint to handle form data from the frontend
 @app.post("/match")
-async def match_resumes(job_description: str, resume: UploadFile = File(...)):
+async def match_resumes(job_description: str = Form(...), resume: UploadFile = File(...)):
     """
     Screens and ranks resumes against a provided job description.
     """
@@ -121,9 +122,22 @@ async def match_resumes(job_description: str, resume: UploadFile = File(...)):
     if resume_df is None:
         return {"error": "Resume dataset failed to load."}
 
-    # Read the content of the uploaded resume file
-    resume_content = (await resume.read()).decode("utf-8")
+    # Use a temporary file to save the uploaded resume
+    try:
+        with NamedTemporaryFile(delete=False, suffix=os.path.splitext(resume.filename)[1]) as temp_file:
+            temp_file.write(await resume.read())
+            temp_file_path = temp_file.name
 
+        # Use pypandoc to convert the file to plain text
+        resume_content = pypandoc.convert_file(temp_file_path, 'plain')
+
+        # Clean up the temporary file
+        os.unlink(temp_file_path)
+    except Exception as e:
+        # Handle potential errors during conversion
+        print(f"Error converting file: {e}")
+        return {"error": "Failed to extract text from resume file."}
+    
     # Preprocess the job description and the uploaded resume
     processed_job_desc = preprocess_text(job_description)
     processed_resume_content = preprocess_text(resume_content)

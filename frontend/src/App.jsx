@@ -11,31 +11,37 @@ function App() {
   const [results, setResults] = useState(null);
 
   const handleScreenResume = async () => {
-    setIsLoading(true);
-    const formData = new FormData();
-    formData.append('resume', resumeFile);
-    formData.append('job_description', jobDescription); 
+  // Add this check to prevent API calls with missing data
+  if (!resumeFile || jobDescription.trim() === '') {
+    alert("Please upload a resume and provide a job description.");
+    return; // Stop the function if data is missing
+  }
 
-    try {
-      const response = await fetch('http://localhost:8000/match', {
-        method: 'POST',
-        body: formData,
-      });
+  setIsLoading(true);
+  const formData = new FormData();
+  formData.append('resume', resumeFile);
+  formData.append('job_description', jobDescription);
 
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
+  try {
+    const response = await fetch('http://localhost:8000/match', {
+      method: 'POST',
+      body: formData,
+    });
 
-      const data = await response.json();
-      setResults(data);
-      
-    } catch (error) {
-      console.error('Error during screening:', error);
-      // Handle the error state in the UI
-    } finally {
-      setIsLoading(false);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
     }
-  };
+
+    const data = await response.json();
+    setResults(data);
+    
+  } catch (error) {
+    console.error('Error during screening:', error);
+    // Handle the error state in the UI
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="bg-gray-100 min-h-screen font-sans">

@@ -15,3 +15,6 @@ const InputPanel = ({ onFileChange, onDescriptionChange, onScreenClick, isLoadin
     </div>
   );
 };
+
+// Add this line to make the component a default export
+export default InputPanel;
