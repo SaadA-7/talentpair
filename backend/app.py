@@ -11,6 +11,7 @@ import json
 import torch
 import pypandoc
 from tempfile import NamedTemporaryFile
+import fitz  # PyMuPDF library
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -111,7 +112,6 @@ def read_root():
     """
     return {"message": "Welcome to the TalentPair API! The server is running."}
 
-# Corrected endpoint to handle form data from the frontend
 @app.post("/match")
 async def match_resumes(job_description: str = Form(...), resume: UploadFile = File(...)):
     """
@@ -124,15 +124,27 @@ async def match_resumes(job_description: str = Form(...), resume: UploadFile = F
 
     # Use a temporary file to save the uploaded resume
     try:
-        with NamedTemporaryFile(delete=False, suffix=os.path.splitext(resume.filename)[1]) as temp_file:
-            temp_file.write(await resume.read())
-            temp_file_path = temp_file.name
+        _, file_extension = os.path.splitext(resume.filename)
+        file_extension = file_extension.lstrip('.').lower()
 
-        # Use pypandoc to convert the file to plain text
-        resume_content = pypandoc.convert_file(temp_file_path, 'plain')
+        if file_extension == 'pdf':
+            # Use PyMuPDF for PDF files
+            file_bytes = await resume.read()
+            doc = fitz.open(stream=file_bytes, filetype="pdf")
+            resume_content = ""
+            for page in doc:
+                resume_content += page.get_text()
+            doc.close()
+        elif file_extension in ['docx', 'doc']:
+            # Use pypandoc for DOCX files
+            with NamedTemporaryFile(delete=False, suffix=f".{file_extension}") as temp_file:
+                temp_file.write(await resume.read())
+                temp_file_path = temp_file.name
+            resume_content = pypandoc.convert_file(temp_file_path, 'plain', format=file_extension)
+            os.unlink(temp_file_path)
+        else:
+            return {"error": f"Unsupported file type: {file_extension}. Please upload a PDF, DOCX, or DOC file."}
 
-        # Clean up the temporary file
-        os.unlink(temp_file_path)
     except Exception as e:
         # Handle potential errors during conversion
         print(f"Error converting file: {e}")
