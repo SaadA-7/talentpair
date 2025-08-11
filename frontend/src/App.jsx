@@ -1,15 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Header from './components/Header';
 import MainLayout from './components/MainLayout';
 import InputPanel from './components/InputPanel';
 
 function App() {
+
+  const [resumeFile, setResumeFile] = useState(null);
+  const[jobDescription, setJobDescription] = useState('');
+
+
   return (
     <div className="bg-gray-100 min-h-screen font-sans">
       <Header />
       <MainLayout>
         {/* Left column for inputs */}
-        <InputPanel />
+        <InputPanel
+          onFileChange={setResumeFile}
+          onDescriptionChange={setJobDescription}
+        />
         
         {/* Right column for results */}
         <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center justify-center text-center">
