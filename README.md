@@ -1,21 +1,62 @@
-To set up:
+# TalentPair: AI-Powered Resume Screener
 
-Create virtual environment (if not done yet):
-python -m venv venv
+## 📌 Overview
+TalentPair is a research prototype developed during my internship at **Elevvo Pathways**. It explores AI-driven communication and unstructured text analysis by matching resumes to job descriptions using Natural Language Processing (NLP).
 
-Activate the virtual environment (PowerShell syntax):
-.\venv\Scripts\Activate
+The system:
+- Preprocesses resumes and job descriptions using embeddings
+- Applies cosine similarity to rank candidates
+- Returns match scores with skill justification
+- Provides a simple web interface for resume upload and instant analysis
 
-You should see something like this in your terminal prompt after activation:
-(venv) PS C:\Users\YourName\resume-screening-nlp>
+---
 
+## ✨ Key Features
+- **Resume–Job Matching:** Preprocessing with advanced text embeddings
+- **Ranking & Justification:** Cosine similarity generates scores and top-candidate lists
+- **Frontend Prototype:** User-friendly resume upload and job description input
+- **Comprehensive Analysis:** Entity extraction, classification, and semantic search using modern NLP tools
 
-Run the server in backend with the command: 
-uvicorn app:app --reload
-avigate to http://127.0.0.1:8000/docs in your browser.
+---
 
-Restart the Uvicorn server with the command:
-uvicorn app:app --host 0.0.0.0 --port 8000 --reload
-This time, it should start up almost instantly.
+## ⚙️ How It Works
+1. **Text Preprocessing**
+   - Lowercasing, punctuation removal, stopword removal
+   - Tokenization and lemmatization
+   - Cleaning of HTML tags and special characters
 
-Navigate to http://127.0.0.1:8000/docs and test the /match endpoint.
+2. **Embedding Generation**
+   - Sentence-Transformer models create semantic embeddings
+   - Similar meanings map close together in vector space
+
+3. **Similarity Matching**
+   - Cosine similarity compares embeddings
+   - Scores close to `1.0` indicate strong matches
+
+---
+
+## 🛠 Technologies Used
+
+### Backend (Python)
+- **FastAPI** – Web framework for API endpoints
+- **Uvicorn** – ASGI server for FastAPI
+- **Sentence-Transformers** – High-quality embeddings
+- **Pandas** – Data manipulation
+- **Scikit-learn** – Cosine similarity calculation
+- **python-multipart** – File upload handling
+
+### Frontend (React + Vite)
+- **React** – UI framework
+- **Vite** – Fast build tool
+- **Tailwind CSS** – Utility-first styling
+
+---
+
+## 💻 Local Setup & Usage
+
+> ⚠️ Requires **Python 3.9+** and **Node.js 18+** installed.
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/yourusername/talentpair.git
+cd talentpair
