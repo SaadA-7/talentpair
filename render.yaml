@@ -1,0 +1,23 @@
+# Inform Render how to build and deploy the application.
+# Defines two services: a backend (FastAPI) and a frontend (React).
+
+# The backend service
+- type: web
+  name: talentpair-backend
+  env: python
+  plan: free
+  buildCommand: "pip install -r requirements.txt"
+  startCommand: "uvicorn app:app --host 0.0.0.0 --port $PORT"
+  rootDir: .
+  envVars:
+    - key: PYTHON_VERSION
+      value: 3.10.12
+
+# The frontend service
+- type: web
+  name: talentpair-frontend
+  env: node
+  plan: free
+  buildCommand: "npm install && npm run build"
+  startCommand: "npm run start"
+  rootDir: frontend

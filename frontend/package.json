@@ -8,11 +8,13 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "tw-init": "tailwindcss init -p"
+    "tw-init": "tailwindcss init -p",
+    "start": "serve -s dist -p $PORT"
   },
   "dependencies": {
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "serve": "^14.2.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
