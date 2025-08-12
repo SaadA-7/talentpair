@@ -1,17 +1,20 @@
-import pandas as pd
+# Standard library imports (built-in Python modules)
+import json
 import os
 import re
+from io import StringIO
+from tempfile import NamedTemporaryFile
+
+# Third-party library imports (external packages)
+import fitz  # PyMuPDF library
 import nltk
+import pandas as pd
+import pypandoc
+import torch
+import uvicorn
+from fastapi import FastAPI, UploadFile, File, Form
 from nltk.corpus import stopwords
 from sentence_transformers import SentenceTransformer, util
-from fastapi import FastAPI, UploadFile, File, Form
-import uvicorn
-from io import StringIO
-import json
-import torch
-import pypandoc
-from tempfile import NamedTemporaryFile
-import fitz  # PyMuPDF library
 
 # Initialize FastAPI app
 app = FastAPI()
