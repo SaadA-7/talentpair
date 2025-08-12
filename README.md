@@ -3,8 +3,12 @@
 ## 📌 Overview
 TalentPair is a research prototype developed during my internship at **Elevvo Pathways**. It explores AI-driven communication and unstructured text analysis by matching resumes to job descriptions using Natural Language Processing (NLP).
 
-![alt text](../../../Pictures/Screenshots/TalentPair-home.png)
+## 📸 Application Screenshot
 
+![TalentPair Home Screen](./images/TalentPair-home.png)
+*TalentPair's clean, modern interface for AI-powered resume screening*
+
+---
 The system:
 - Preprocesses resumes and job descriptions using embeddings
 - Applies cosine similarity to rank candidates
