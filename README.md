@@ -110,8 +110,8 @@ npm run dev
  - View match score, ranking, and skill justification
 
 ## Deployment
- - The application is deployed on Render.
- - Live App: Click here to view
+ - The application is on track to be deployed on Render.
+ - App Link: **CURENTLY IN DEPLOYMENT PROCESSING. CHECK BACK SOON**
  - (Note: The backend may take 1–2 minutes to wake from a cold start due to libraries installing.)
 
 ## Future Enhancements
