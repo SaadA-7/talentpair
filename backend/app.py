@@ -1,8 +1,8 @@
 import pandas as pd
 import os
 import re
-from nltk.corpus import stopwords
 import nltk
+from nltk.corpus import stopwords
 from sentence_transformers import SentenceTransformer, util
 from fastapi import FastAPI, UploadFile, File, Form
 import uvicorn
@@ -39,7 +39,12 @@ app.add_middleware(
 # >>> nltk.download('stopwords')
 
 # Get the list of English stopwords
-stop_words = set(stopwords.words('english'))
+try:
+    stop_words = set(stopwords.words('english'))
+except LookupError:
+    print("Downloading NLTK stopwords...")
+    nltk.download('stopwords')
+    stop_words = set(stopwords.words('english'))
 
 def preprocess_text(text):
     """
