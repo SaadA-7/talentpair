@@ -1,12 +1,13 @@
-# Inform Render how to build and deploy the application.
-# Defines two services: a backend (FastAPI) and a frontend (React).
+# This file tells Render how to build and deploy your application.
+# It defines two services: a backend (FastAPI) and a frontend (React).
 
 # The backend service
 - type: web
   name: talentpair-backend
   env: python
   plan: free
-  buildCommand: "pip install -r requirements.txt"
+  # We will install requirements from the root, then proceed with the rest of the build.
+  buildCommand: "pip install -r ../requirements.txt"
   startCommand: "uvicorn app:app --host 0.0.0.0 --port $PORT"
   rootDir: backend
   envVars:
