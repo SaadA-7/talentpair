@@ -5,7 +5,7 @@ import ScreenButton from './ScreenButton';
 
 const InputPanel = ({ onFileChange, onDescriptionChange, onScreenClick, isLoading, resumeFile }) => {
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg">
+    <div className="bg-white my-0 p-6 rounded-xl shadow-lg">
       <h2 className="text-xl font-semibold mb-4 text-gray-700">Upload Resume and Job Description</h2>
       <ResumeUpload onFileChange={onFileChange} resumeFile={resumeFile} />
       <JobDescriptionInput onDescriptionChange={onDescriptionChange} />

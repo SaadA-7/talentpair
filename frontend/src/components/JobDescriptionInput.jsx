@@ -12,7 +12,7 @@ const JobDescriptionInput = ({ onDescriptionChange }) => {
         id="job-description"
         name="job-description"
         rows="8"
-        className="block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+        className="block w-full rounded-xl p-1 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         placeholder="Paste the job description here..."
         onChange={handleChange}
       ></textarea>
